@@ -1,0 +1,21 @@
+Package: RGOB
+Title: Generalized Oaxaca-Blinder inference
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Guillaume",
+           family = "Basse",
+           role = c("aut", "cre"),
+           email = "gw.basse@gmail.com",
+           comment = c(ORCID = "0000-0001-6032-5999"))
+Description: Provides an implementation of the Generalized
+	     Oaxaca-Blinder (GOB) estimator and confidence
+	     intervals, as described in Guo et Basse (2020).	     
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports: 
+    magrittr,
+    rlang
+RoxygenNote: 6.1.1
+Suggests: 
+    testthat (>= 2.1.0)
