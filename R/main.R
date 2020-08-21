@@ -1,19 +1,5 @@
-##library(rlang)
-##library(stringr)
-##library(magrittr)
 
-
-## utils
-
-##
-## Desired call: gob(Y ~ A + B, dat)
-##
-## or maybe
-##
-## gob(r1= Y ~ A + B, r0 = Y~A + C, Z=Z, data=dat)
-##
-
-## note: do it for a prediction-unbiased pred.fn, then
+## TODO: do it for a prediction-unbiased pred.fn, then
 ## include "debiasing" part
 
 #' Computes a point estimate and confidence interval using the GOB estimator
@@ -28,6 +14,8 @@
 #' If `NULL`, the variables in `form` will be taken from the
 #' calling environment.
 #' @param alpha The confidence level (defaults to 0.95).
+#' @return A list whose first element is a point estimate, and second element
+#' is a confidence interval.
 #' @examples
 #' library(RGOB)
 #' N <- 100
@@ -89,7 +77,7 @@ gob <- function(form, Z, pred.fn.ls=NULL, data=NULL, alpha=0.95) {
 
     CI <- tau.hat + t.test(resid.1, resid.0, conf.level=alpha)$conf.int
 
-    return(list(tau.hat, CI))
+    return(list("estimate"=tau.hat, "conf.int"=CI))
 }
 
 

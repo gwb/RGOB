@@ -22,6 +22,10 @@ calling environment.}
 
 \item{alpha}{The confidence level (defaults to 0.95).}
 }
+\value{
+A list whose first element is a point estimate, and second element
+is a confidence interval.
+}
 \description{
 Computes a point estimate and confidence interval using the GOB estimator
 }
