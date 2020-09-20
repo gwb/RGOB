@@ -22,7 +22,8 @@ devtools::install_github("gwb/RGOB")
 
 The main entry point is the `gob` function, which computes the point estimate 
 and associated confidence interval, using the specified regression function. 
-The code below gives a simple example of how to ajdust using a linear model:
+The code below gives a simple example of how to adjust using a both linear 
+and non-linear models:
 
 ``` r
 library(RGOB)
