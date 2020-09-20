@@ -18,6 +18,23 @@ is_dot_predictor_formula <- function(form) {
     }
 }
 
+#' Returns a string version of a formula
+#'
+#' @param form A formula
+#' @return a string representing the formula
+#' @examples
+#' formula_to_string(Y ~ X + Y) # returns: "Y ~ X + Y" 
+formula_to_string <- function(form) {
+    rec <- function(form) {
+        if(!is.call(form)) {
+            return(as_string(form))
+        } else {
+            return(c(rec(form[[2]]), as_string(form[[1]]), rec(form[[3]])))
+        }
+    }
+   return(paste(rec(form), collapse=" "))
+}
+
 get_predictor_names <- function(form) {
     if(is_one_predictor_formula(form)) {
         return(as_string(form[[3]]))
@@ -50,7 +67,6 @@ build_predictor_dataframe <- function(form) {
 }
 
 build_predictor_dataframe_from_data <- function(form, data) {
-    predictor_names <- get_predictor_names(form)
-    
+    return(data[,get_predictor_names(form)])
 }
 
