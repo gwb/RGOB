@@ -70,3 +70,6 @@ build_predictor_dataframe_from_data <- function(form, data) {
     return(data[,get_predictor_names(form)])
 }
 
+has_data_field <- function(call_form) {
+    return("data" %in% names(call_form))
+}

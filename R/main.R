@@ -24,9 +24,16 @@
 #' X <- rnorm(N); B <- rnorm(N); C <- rnorm(N)
 #' Z <- sample(c(0,1), N, replace=TRUE)
 #' Y <- 1 + 0.2 * X + 0.5 * Z + rnorm(N, sd=0.1)
-#' dat <- data.frame(Yp=Y, D=X, E=B, F=C)
+#' Yb <- ifelse(Y > 1.2, 1, 0)
+#' dat <- data.frame(Yp=Y, D=X, E=B, F=C, Ybp=Yb)
+#'
+#' # Using lm for covariate adjustment
 #' gob(lm(Y ~ X + B), Z)
 #' gob(lm(Yp~ D + E), Z, data=dat)
+#'
+#' # Using logistic regression adjustment
+#' gob(glm(Yb ~ X + B, family=binomial(link="logit")), Z)
+#' gob(glm(Yb ~ D + E, family=binomial(link="logit")), Z, data=dat)
 #' @import rlang
 #' @export
 gob <- function(form, Z, pred.fn.ls=NULL, data=NULL, alpha=0.95) {
@@ -37,6 +44,15 @@ gob <- function(form, Z, pred.fn.ls=NULL, data=NULL, alpha=0.95) {
         new_form <- form        
     } else {
         ## call form
+        if(has_data_field(form.expr)) {
+            warning(paste0("The call formula you provided contains data field `data=",
+                           as_string(form.expr$data),
+                           "'. The `data' argument should be provided *outside* of the ",
+                           "lm(.) or glm(.) call. Any `data' field inside these calls has ",
+                           "been ignored."))
+            form.expr$data <- NULL
+            
+        }
         new_form <- formula(form.expr[[2]], env=caller_env())
         pred.fn.ls  <- match_pred_fn(form.expr, caller_env())
     }
