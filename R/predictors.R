@@ -74,21 +74,24 @@ lm.pred <- function(form) {
                 }
             }
         } else {
+            # X is a dataframe
             dat.X <- X
         }
-        dat <- cbind(dat.Y, dat.X)
-        lm.res <- lm(form, dat)
-        ##print(lm.res)
-        res <- function(x){
-            if(is.data.frame(x)) {
-                as.numeric(predict(lm.res, newdata=x))
-            } else {
-                new.dat.X <- data.frame("X" = x)
-                names(new.dat.X) = names(dat.X)
-                as.numeric(predict(lm.res, newdata=new.dat.X))
-            }            
-        }
-        return(res)
+        dat <- cbind(dat.Y, dat.X) # combined df with correct names
+        reg_res <- lm(form, dat)
+
+        pred_res <- .build_pred_fn(reg_res, names(dat.X))
+        return(pred_res)
+##        res <- function(x){
+##            if(is.data.frame(x)) {
+##                as.numeric(predict(lm.res, newdata=x))
+##            } else {
+##                new.dat.X <- data.frame("X" = x)
+##                names(new.dat.X) = names(dat.X)
+##                as.numeric(predict(lm.res, newdata=new.dat.X))
+##            }            
+##        }        
+##        return(res)
     }
     return(c(build.pred.fn, build.pred.fn))
 }
@@ -98,6 +101,47 @@ lm.pred <- function(form) {
 #' @param form A formula
 #' @return A list of two functions.
 #' @export
-glm.pred <- function(form) {
-    return(NULL)
+glm.pred <- function(form, ...) {
+    outcome.expr <- form[[2]]
+    build.pred.fn <- function(Y, X) {
+        dat.Y  <- data.frame(Y)
+        names(dat.Y) <- as_string(outcome.expr)
+        if(is.vector(X)) {
+            if(!is_one_predictor_formula(form)){
+                stop(paste0("The formula provided: ", formula_to_string(form),
+                            ", is incompatible with argument X being a vector"))
+            } else {
+                dat.X <- data.frame("X" = X)
+                names(dat.X) <- get_predictor_names(form)
+            }
+        } else {
+            ## X is a dataframe. No further processing needed.
+            dat.X <- X
+        }
+
+        ## when running the glm, it's important that ... contain *named* arguments,
+        ## if any.
+        dat <- cbind(dat.Y, dat.X)
+        reg_res <- glm(form, data=dat, ... )
+
+        pred_res <- .build_pred_fn(reg_res, names(dat.X))
+        return(pred_res)
+    }    
+        
+    return(c(build.pred.fn, build.pred.fn))
+}
+
+
+.build_pred_fn <- function(reg_res, pred_names) {
+    res <- function(x) {
+        if(is.data.frame(x)) {
+            ## no preprocessing needed
+            return(as.numeric(predict(reg_res, newdata=x)))
+        } else {
+            new.dat.X <- data.frame("X" = x)
+            names(new.dat.X) = pred_names
+            return(as.numeric(predict(reg_res, newdata=new.dat.X)))
+        }
+    }
+    return(res)
 }

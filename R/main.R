@@ -4,6 +4,8 @@
 
 #' Computes a point estimate and confidence interval using the GOB estimator
 #'
+#' TODO: Give more details on `call-formulas`
+#' 
 #' @param form A formula or a call-formula (see details for `call-formula`).
 #' @param Z A vector of assignments.
 #' @param pred.fn.ls A list of learners for the treatment and control potential
@@ -40,22 +42,23 @@ gob <- function(form, Z, pred.fn.ls=NULL, data=NULL, alpha=0.95) {
     }
     
     if(is.null(data)){
-        ## The form uses variables described in the caller env
-        
+        ## The form uses variables described in the caller env        
         if(is_dot_predictor_formula(new_form)){
             stop("dot is invalid in formula if `data` is NULL")
+        } else {
+            Y <- get_env(new_form)[[as_string(new_form[[2]])]]
+            X <- build_predictor_dataframe(new_form)
+            
+            return(.gob(Y, X, Z, pred.fn.ls, alpha))
         }
-        Y <- get_env(new_form)[[as_string(new_form[[2]])]]
-        X <- build_predictor_dataframe(new_form)
+    } else {
+        ## deals with the case where data is provided    
+        Y <- eval(expr(data[, !!as_string(new_form[[2]])]))
+        X <- data[, get_predictor_names(new_form), drop=FALSE]
         
         return(.gob(Y, X, Z, pred.fn.ls, alpha))
-    }
 
-    ## deals with the case where data is provided    
-    Y <- eval(expr(data[, !!as_string(new_form[[2]])]))
-    X <- data[, get_predictor_names(new_form), drop=FALSE]
-    
-    return(.gob(Y, X, Z, pred.fn.ls, alpha))    
+    }
 }
 
 .gob <- function(Y, X, Z, pred.fn.ls, alpha=0.95) {
