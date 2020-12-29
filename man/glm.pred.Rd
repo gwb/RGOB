@@ -4,14 +4,24 @@
 \alias{glm.pred}
 \title{To be implemented soon.}
 \usage{
-glm.pred(form)
+glm.pred(form, ...)
 }
 \arguments{
 \item{form}{A formula}
+
+\item{...}{Additional arguments to be passed to the glm function. See examples}
 }
 \value{
 A list of two functions.
 }
 \description{
 To be implemented soon.
+}
+\examples{
+library(RGOB)
+N <- 100
+X <- rnorm(N)
+Z <- sample(c(0,1), size=N, replace=TRUE)
+Y <- 1 + 0.2 * X + 0.5*Z
+mu_hat_ls <- glm.pred(Y~X, family=gaussian) 
 }

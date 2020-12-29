@@ -27,7 +27,7 @@ A list whose first element is a point estimate, and second element
 is a confidence interval.
 }
 \description{
-Computes a point estimate and confidence interval using the GOB estimator
+TODO: Give more details on `call-formulas`
 }
 \examples{
 library(RGOB)
@@ -35,7 +35,14 @@ N <- 100
 X <- rnorm(N); B <- rnorm(N); C <- rnorm(N)
 Z <- sample(c(0,1), N, replace=TRUE)
 Y <- 1 + 0.2 * X + 0.5 * Z + rnorm(N, sd=0.1)
-dat <- data.frame(Yp=Y, D=X, E=B, F=C)
+Yb <- ifelse(Y > 1.2, 1, 0)
+dat <- data.frame(Yp=Y, D=X, E=B, F=C, Ybp=Yb)
+
+# Using lm for covariate adjustment
 gob(lm(Y ~ X + B), Z)
 gob(lm(Yp~ D + E), Z, data=dat)
+
+# Using logistic regression adjustment
+gob(glm(Yb ~ X + B, family=binomial(link="logit")), Z)
+gob(glm(Ybp ~ D + E, family=binomial(link="logit")), Z, data=dat)
 }

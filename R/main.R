@@ -33,7 +33,7 @@
 #'
 #' # Using logistic regression adjustment
 #' gob(glm(Yb ~ X + B, family=binomial(link="logit")), Z)
-#' gob(glm(Yb ~ D + E, family=binomial(link="logit")), Z, data=dat)
+#' gob(glm(Ybp ~ D + E, family=binomial(link="logit")), Z, data=dat)
 #' @import rlang
 #' @export
 gob <- function(form, Z, pred.fn.ls=NULL, data=NULL, alpha=0.95) {
