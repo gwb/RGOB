@@ -54,7 +54,8 @@ gob <- function(form, Z, pred.fn.ls=NULL, data=NULL, alpha=0.95) {
             
         }
         new_form <- formula(form.expr[[2]], env=caller_env())
-        pred.fn.ls  <- match_pred_fn(form.expr, caller_env())
+        ##pred.fn.ls  <- match_pred_fn(form.expr, caller_env())
+        pred.fn.ls <- match_pred_fn(form.expr)
     }
     
     if(is.null(data)){

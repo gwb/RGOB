@@ -5,15 +5,10 @@
 \title{Replaces a call to a regression function with a call to the
 associated prediction function.}
 \usage{
-match_pred_fn(form_call_expr, orig_env)
+match_pred_fn(form_call_expr)
 }
 \arguments{
 \item{form_call_expr}{An expression containing a call to `lm` or `glm`.}
-
-\item{orig_env}{An environment.
-
-This is the environment in which the expression will be evaluated. It must
-contain definitions for all the variables captured in the expression.}
 }
 \value{
 A list of functions.
@@ -22,8 +17,7 @@ Specifically, it returns the same as the functions `lm.res` and `glm.res`.
 }
 \description{
 `match_pred_fn` takes an expression capturing a call to either
-`lm` or `glm`, and the environment in which this expression should
-be evaluated; it then replaces the call to `lm` or `glm` by a call to
+`lm` or `glm` and replaces that call with a call to
 `lm.pred` or `glm.pred`.
 }
 \examples{
@@ -37,7 +31,7 @@ Y <- 1 + 0.2 * X + 0.5*Z
 lm_call <- expr(lm(Y ~ X + Z))
 glm_call <- expr(glm(Y ~ X + Z))
 
-match_pred_fn(lm_call, current_env()) # equivalent to: lm.pred(Y ~ X + Z)
-match_pred_fn(glm_call, current_env()) # equivalent to: glm.pred(Y ~ X + Z)
+match_pred_fn(lm_call) # equivalent to: lm.pred(Y ~ X + Z)
+match_pred_fn(glm_call) # equivalent to: glm.pred(Y ~ X + Z)
 }
 }

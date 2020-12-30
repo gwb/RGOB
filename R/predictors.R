@@ -3,16 +3,10 @@
 #' associated prediction function.
 #'
 #' `match_pred_fn` takes an expression capturing a call to either
-#' `lm` or `glm`, and the environment in which this expression should
-#' be evaluated; it then replaces the call to `lm` or `glm` by a call to
+#' `lm` or `glm` and replaces that call with a call to
 #' `lm.pred` or `glm.pred`.
 #'
 #' @param form_call_expr An expression containing a call to `lm` or `glm`.
-#' @param orig_env An environment.
-#'
-#' This is the environment in which the expression will be evaluated. It must
-#' contain definitions for all the variables captured in the expression.
-#'
 #' @return A list of functions.
 #'
 #' Specifically, it returns the same as the functions `lm.res` and `glm.res`.
@@ -28,10 +22,10 @@
 #' lm_call <- expr(lm(Y ~ X + Z))
 #' glm_call <- expr(glm(Y ~ X + Z))
 #'
-#' match_pred_fn(lm_call, current_env()) # equivalent to: lm.pred(Y ~ X + Z)
-#' match_pred_fn(glm_call, current_env()) # equivalent to: glm.pred(Y ~ X + Z)
+#' match_pred_fn(lm_call) # equivalent to: lm.pred(Y ~ X + Z)
+#' match_pred_fn(glm_call) # equivalent to: glm.pred(Y ~ X + Z)
 #' }
-match_pred_fn <- function(form_call_expr, orig_env) {
+match_pred_fn <- function(form_call_expr) {
     pred_hash <- list("lm" = "lm.pred", "glm" = "glm.pred")
     fn_name <- as_string(form_call_expr[[1]])
     if(!(fn_name %in% names(pred_hash))) {
@@ -42,8 +36,8 @@ match_pred_fn <- function(form_call_expr, orig_env) {
     pred_sym <- sym(pred_hash[[fn_name]])
     new_form_call_expr <- form_call_expr
     new_form_call_expr[[1]] <- pred_sym
-    return(eval(new_form_call_expr, orig_env))
-    ##return(eval(new_form_call_expr)) TODO: CHECK IF THAT IS NOT ENOUGH
+    ##return(eval(new_form_call_expr, orig_env))
+    return(eval(new_form_call_expr)) ##TODO: CHECK IF THAT IS NOT ENOUGH
 }
 
 
