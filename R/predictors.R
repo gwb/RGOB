@@ -264,11 +264,11 @@ build_regression_data <- function(form, Y, X) {
     res <- function(x) {
         if(is.data.frame(x)) {
             ## no preprocessing needed
-            return(as.numeric(predict(reg_res, newdata=x)))
+            return(as.numeric(predict(reg_res, newdata=x, type="response")))
         } else {
             new.dat.X <- data.frame("X" = x)
             names(new.dat.X) = pred_names
-            return(as.numeric(predict(reg_res, newdata=new.dat.X)))
+            return(as.numeric(predict(reg_res, newdata=new.dat.X, type="response")))
         }
     }
     return(res)
