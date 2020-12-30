@@ -83,50 +83,47 @@ match_pred_fn <- function(form_call_expr) {
 #' mu_hat_1 <- mu_hat_ls[[2]](Y[Z==1], X[Z==1])
 #' mu_hat_0(0.2) # 1.04
 #' mu_hat_1(0.1) # 1.52
+#'
+#' @family predictor builders
+#' 
 #' @export
 lm.pred <- function(form) {
-    ##res.lm <- lm(form, dat)
-    form.expr <- enexpr(form)
-    outcome.expr <- form.expr[[2]]
+    outcome.expr <- form[[2]]
+    
+    ## The following function takes a vector `Y` and
+    ## a vector or dataframe `X`, and returns a 
+    ## predictor function based on the linear model.
     build.pred.fn <- function(Y, X) {
-        dat.Y <- data.frame(Y)
-        names(dat.Y) <- as_string(outcome.expr) 
-        if(is.vector(X)) {
-            if(length(form.expr) != 3) {
-                stop("invalid formula for vector")
-            } else {
-                dat.X <- data.frame("X" = X)
-                if(as_string(form.expr[[3]]) != ".") {
-                    names(dat.X) <- as_string(form.expr[[3]])
-                }
-            }
-        } else {
-            # X is a dataframe
-            dat.X <- X
-        }
-        dat <- cbind(dat.Y, dat.X) # combined df with correct names
+        ## Creates a dataframe that can be used in a regression
+        dat.ls <- build_regression_data(form, Y, X)
+        dat <- dat.ls$dat
+        pred_names <- dat.ls$pred_names
+
+        ## runs the regression with the created dataframe
         reg_res <- lm(form, dat)
 
-        pred_res <- .build_pred_fn(reg_res, names(dat.X))
+        ## Constructs and returns a function `pred_res` that takes
+        ## a covariate `x` (either a scalar, or a row of a dataframe)
+        ## and returns the predicted value from the linear regression.
+        pred_res <- .build_pred_fn(reg_res, pred_names)
         return(pred_res)
-##        res <- function(x){
-##            if(is.data.frame(x)) {
-##                as.numeric(predict(lm.res, newdata=x))
-##            } else {
-##                new.dat.X <- data.frame("X" = x)
-##                names(new.dat.X) = names(dat.X)
-##                as.numeric(predict(lm.res, newdata=new.dat.X))
-##            }            
-##        }        
-##        return(res)
     }
+    
     return(c(build.pred.fn, build.pred.fn))
 }
 
-#' To be implemented soon.
+#' Generates a function that generates a learner from a formula
 #'
+#' Similar to the `lm.pred` function, `glm.pred` takes a formula (and
+#' optional additional arguments) and returns a function that, when provided
+#' data, returns a predictor function. See examples.
+#' 
 #' @param form A formula
-#' @param ... Additional arguments to be passed to the glm function. See examples
+#' @param ... Additional named arguments to be passed to the glm function.
+#'
+#' It is important that the arguments be named. Passing positional arguments may
+#' lead to errors.
+#' 
 #' @return A list of two functions.
 #' @examples
 #' library(RGOB)
@@ -134,39 +131,135 @@ lm.pred <- function(form) {
 #' X <- rnorm(N)
 #' Z <- sample(c(0,1), size=N, replace=TRUE)
 #' Y <- 1 + 0.2 * X + 0.5*Z
-#' mu_hat_ls <- glm.pred(Y~X, family=gaussian) 
+#' mu_hat_ls <- glm.pred(Y~X, family=gaussian)
+#' 
+#' @family predictor builders
 #' @export
 glm.pred <- function(form, ...) {
-    outcome.expr <- form[[2]]
+    ## The following function takes a vector `Y` and
+    ## a vector or dataframe `X`, and returns a 
+    ## predictor function based on a generalized linear model.
     build.pred.fn <- function(Y, X) {
-        dat.Y  <- data.frame(Y)
-        names(dat.Y) <- as_string(outcome.expr)
-        if(is.vector(X)) {
-            if(!is_one_predictor_formula(form)){
-                stop(paste0("The formula provided: ", formula_to_string(form),
-                            ", is incompatible with argument X being a vector"))
-            } else {
-                dat.X <- data.frame("X" = X)
-                names(dat.X) <- get_predictor_names(form)
-            }
-        } else {
-            ## X is a dataframe. No further processing needed.
-            dat.X <- X
-        }
+        ## Creates a dataframe that can be used in a regression
+        dat.ls <- build_regression_data(form, Y, X)
+        dat <- dat.ls$dat
+        pred_names <- dat.ls$pred_names
 
-        ## when running the glm, it's important that ... contain *named* arguments,
-        ## if any.
-        dat <- cbind(dat.Y, dat.X)
+        ## runs the regression with the created dataframe
         reg_res <- glm(form, data=dat, ... )
 
-        pred_res <- .build_pred_fn(reg_res, names(dat.X))
+        ## Construct the predictor functions
+        pred_res <- .build_pred_fn(reg_res, pred_names)
         return(pred_res)
     }    
         
     return(c(build.pred.fn, build.pred.fn))
 }
 
+#' Constructs a dataframe for use in regression functions
+#'
+#' `build_regression_data` construct a dataframe `dat` from
+#' `Y` and `X` for use in a regression such as `lm(form, data=dat)`.
+#'
+#' The names of the columns of the dataframe constructed must
+#' correspond to the variables named in `form`, except in the case
+#' where the formula `form` has a dot on the right-hand-side
+#' (e.g. Y1 ~ .). If `X` is already a dataframe, not check is
+#' done. If it is a vector, then it is converted into a dataframe.
+#'
+#' @param form A formula.
+#' @param Y A vector.
+#' @param X A vector or a dataframe.
+#' @return A dataframe.
+#'
+#' @examples
+#' \dontrun{
+#' A <- c(1, 2)
+#' B <- c(3, 4)
+#' C <- c(5, 6)
+#'
+#' X <- data.frame(X1 = B, X2 = C)
+#' 
+#' build_regression_data(Y ~ X1, A, B)
+#' # returns:
+#' # Y X1
+#' # 1 3
+#' # 2 4 
+#'
+#' build_regression_data(Y ~ ., A, B)
+#' # returns:
+#' # Y X
+#' # 1 3
+#' # 2 4
+#'
+#' build_regression_data(Y ~ X1 + X2, A, X)
+#' # returns:
+#' # Y X1 X2 
+#' # 1 3  5  
+#' # 2 4  6
+#'
+#' build_regression_data(Y ~ X1, A, X)
+#' # returns:
+#' # Y X1 X2 
+#' # 1 3  5  
+#' # 2 4  6
+#' }
+#' 
+build_regression_data <- function(form, Y, X) {
+    ## Creates `dat.Y`
+    ## This is a dataframe containing a single
+    ## column of outcomes, with the appropriate name
+    ## (the name is from `form`... it may not be `Y`)
+    dat.Y <- data.frame(Y)
+    names(dat.Y) <- as_string(form[[2]])
 
+    ## Creates `dat.X`
+    ## A dataframe containing the covariates, with the
+    ## correct names, as supplied by `form`. Deals with
+    ## both the case where `X` is a vector and the case
+    ## where it is a dataframe.
+
+    if(is.vector(X)) {
+
+        ## The formula `form` cannot have more 
+        ## than one named predictor, e.g. Y ~ X1 + X2
+        if(length(form) != 3) {
+            stop(paste0("The formula provided: ", formula_to_string(form),
+                        ", is incompatible with argument X being a vector"))
+        }
+
+        ## This leaves two possibilities:
+        ## (1) Y ~ X1
+        ## or
+        ## (2) Y ~ .
+        ## In the case of (1), the name needs to be taken
+        ## from `form`. In the case of (2), the name in
+        ## `dat.X` doesn't matter so we call it `X`, which
+        ## is arbitrary.        
+        if(is_one_predictor_formula(form)) {
+            ## The formula is of type (1)
+            dat.X <- data.frame("X" = X)
+            names(dat.X) <- get_predictor_names(form)
+        } else {
+            ## The formula is of type (2)
+            dat.X <- data.frame("X" = X)
+        }        
+    } else {
+        ## X is already a dataframe
+        dat.X <- X
+    }
+
+    
+    dat <- cbind(dat.Y, dat.X)    
+    return(list(dat=dat, pred_names=names(dat.X)))    
+}
+
+#' Constructs a prediction function from a regression output
+#'
+#' @param reg_res The output object from a regression, e.g. `lm` or `glm`
+#' @param pred_names The names of the predictors
+#' @return A function that takes a scalar or data.frame row and returns
+#' a prediction.
 .build_pred_fn <- function(reg_res, pred_names) {
     res <- function(x) {
         if(is.data.frame(x)) {

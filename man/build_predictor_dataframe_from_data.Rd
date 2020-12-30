@@ -16,6 +16,10 @@ A dataframe.
 
 Each column of the dataframe is the vector of values associated with a
 predictor in `form`, as extracted from `data`.
+
+If the formula has a dot as a predictor (e.g. Y ~ .), then the entire
+dataframe `data` is returned minus the column containing the outcome.
+See the examples.
 }
 \description{
 `build_predictor_dataframe_from_data` extracts a dataframe containing
@@ -27,12 +31,14 @@ library(RGOB)
 dat <- data.frame(A = c(1,2,3,4)
                   X = c(5,6,7,8)
                   Z = c(1,0,1,0))
-build_predictor_dataframe_from_data(A ~ X + Z)
+build_predictor_dataframe_from_data(A ~ X + Z, dat)
 # returns: 
 # X Z
 # 5 1
 # 6 0
 # 7 1
 # 8 0
+
+build_predictor_dataframe_from_data(A ~ ., dat) # equivalent to previous call.
 }
 }

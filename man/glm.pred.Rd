@@ -2,20 +2,25 @@
 % Please edit documentation in R/predictors.R
 \name{glm.pred}
 \alias{glm.pred}
-\title{To be implemented soon.}
+\title{Generates a function that generates a learner from a formula}
 \usage{
 glm.pred(form, ...)
 }
 \arguments{
 \item{form}{A formula}
 
-\item{...}{Additional arguments to be passed to the glm function. See examples}
+\item{...}{Additional named arguments to be passed to the glm function.
+
+It is important that the arguments be named. Passing positional arguments may
+lead to errors.}
 }
 \value{
 A list of two functions.
 }
 \description{
-To be implemented soon.
+Similar to the `lm.pred` function, `glm.pred` takes a formula (and
+optional additional arguments) and returns a function that, when provided
+data, returns a predictor function. See examples.
 }
 \examples{
 library(RGOB)
@@ -23,5 +28,10 @@ N <- 100
 X <- rnorm(N)
 Z <- sample(c(0,1), size=N, replace=TRUE)
 Y <- 1 + 0.2 * X + 0.5*Z
-mu_hat_ls <- glm.pred(Y~X, family=gaussian) 
+mu_hat_ls <- glm.pred(Y~X, family=gaussian)
+
 }
+\seealso{
+Other predictor builders: \code{\link{lm.pred}}
+}
+\concept{predictor builders}

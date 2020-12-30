@@ -1,10 +1,25 @@
 
-## TODO: do it for a prediction-unbiased pred.fn, then
-## include "debiasing" part
 
 #' Computes a point estimate and confidence interval using the GOB estimator
 #'
-#' TODO: Give more details on `call-formulas`
+#' `gob` implements the Generalized Oaxaca-Blinder covariate adjustment of
+#' Guo and Basse (2020). The function currently supports linear models
+#' and generalized linear models out of the box; it allows allows the
+#' specification of custom regression functions.
+#'
+#' Adjustment via linear and generalized linear models is as easy as:
+#'
+#' > gob(lm(Y ~ X1 + X2), Z)
+#'
+#' or 
+#'
+#' > gob(glm(Y ~ X1 + X2, family=gaussian), Z)
+#'
+#' for linear adjustment. Nonlinear adjustment via the `glm` function
+#' is also straightforward, e.g.
+#'
+#' > gob(glm(Y ~ X1 + X2, family=Poisson), Z)
+#'
 #' 
 #' @param form A formula or a call-formula (see details for `call-formula`).
 #' @param Z A vector of assignments.
@@ -54,9 +69,11 @@ gob <- function(form, Z, pred.fn.ls=NULL, data=NULL, alpha=0.95) {
             
         }
         new_form <- formula(form.expr[[2]], env=caller_env())
-        ##pred.fn.ls  <- match_pred_fn(form.expr, caller_env())
         pred.fn.ls <- match_pred_fn(form.expr)
-    }
+    }    
+
+    ## DO SOME CHECKS TO MAKE SURE USER DOESN'T INCLUDE ASSIGNMENT IN
+    ## FORMULA. 
     
     if(is.null(data)){
         ## The form uses variables described in the caller env        
@@ -71,13 +88,33 @@ gob <- function(form, Z, pred.fn.ls=NULL, data=NULL, alpha=0.95) {
     } else {
         ## deals with the case where data is provided    
         Y <- eval(expr(data[, !!as_string(new_form[[2]])]))
-        X <- data[, get_predictor_names(new_form), drop=FALSE]
+        
+        ##X <- data[, get_predictor_names(new_form), drop=FALSE]
+        X <- build_predictor_dataframe_from_data(new_form, data)
         
         return(.gob(Y, X, Z, pred.fn.ls, alpha))
 
     }
 }
 
+#' Unsugared version of `gob`
+#'
+#' `.gob` does the actual work of computing the point estimate and
+#' confidence interval. It should generally not be called directly
+#' (and is in fact not exposed to the user).
+#'
+#' @param Y A vector of outcomes.
+#' @param X A dataframe of covariates.
+#' @param Z A binary vector of assignments.
+#' @param pred.fn.ls A list of length 2.
+#'
+#' The first element is the regression function to apply to the
+#' control units, while the second element is the regression function
+#' to apply to the treated units.
+#'
+#' @param alpha The desired coverage of the confidence interval.
+#' @return a list of length 2. The first element is the point estimate;
+#' the second is the confidence interval.
 .gob <- function(Y, X, Z, pred.fn.ls, alpha=0.95) {
     X.1 <- X[Z==1, , drop=FALSE]; Y.1 <- Y[Z==1]
     X.0 <- X[Z==0, , drop=FALSE]; Y.0 <- Y[Z==0]

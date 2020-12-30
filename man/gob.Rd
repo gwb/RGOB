@@ -27,7 +27,24 @@ A list whose first element is a point estimate, and second element
 is a confidence interval.
 }
 \description{
-TODO: Give more details on `call-formulas`
+`gob` implements the Generalized Oaxaca-Blinder covariate adjustment of
+Guo and Basse (2020). The function currently supports linear models
+and generalized linear models out of the box; it allows allows the
+specification of custom regression functions.
+}
+\details{
+Adjustment via linear and generalized linear models is as easy as:
+
+> gob(lm(Y ~ X1 + X2), Z)
+
+or
+
+> gob(glm(Y ~ X1 + X2, family=gaussian), Z)
+
+for linear adjustment. Nonlinear adjustment via the `glm` function
+is also straightforward, e.g.
+
+> gob(glm(Y ~ X1 + X2, family=Poisson), Z)
 }
 \examples{
 library(RGOB)

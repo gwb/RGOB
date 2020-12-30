@@ -51,4 +51,9 @@ mu_hat_0 <- mu_hat_ls[[1]](Y[Z==0], X[Z==0])
 mu_hat_1 <- mu_hat_ls[[2]](Y[Z==1], X[Z==1])
 mu_hat_0(0.2) # 1.04
 mu_hat_1(0.1) # 1.52
+
 }
+\seealso{
+Other predictor builders: \code{\link{glm.pred}}
+}
+\concept{predictor builders}
