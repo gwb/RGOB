@@ -19,5 +19,6 @@ Extracts the names of the predictors in a formula
 \dontrun{
 get_predictor_names(Y ~ X + Z) # returns: c("X", "Z")
 get_predictor_names(Y ~ X:C) # returns: c("X", "C")
+get_predictor_names(Y ~ X + B + X:C) # returns: c("X", "B", "C")
 }
 }

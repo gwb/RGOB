@@ -53,7 +53,8 @@
 #' @export
 gob <- function(form, Z, pred.fn.ls=NULL, data=NULL, alpha=0.95) {
     ## Checks if call-form or form
-    form.expr <- enexpr(form)    
+    form.expr <- enexpr(form)
+    assgt.expr <- enexpr(Z)
     if(as_string(form.expr[[1]]) == '~') {
         ## formula form
         new_form <- form        
@@ -74,6 +75,18 @@ gob <- function(form, Z, pred.fn.ls=NULL, data=NULL, alpha=0.95) {
 
     ## DO SOME CHECKS TO MAKE SURE USER DOESN'T INCLUDE ASSIGNMENT IN
     ## FORMULA. 
+    pred_names <- get_predictor_names(new_form)
+    assgt_name <- as_string(assgt.expr)
+
+    if(assgt_name %in% pred_names) {
+        stop(paste0("The variable name used for the assignment, ",
+                    assgt_name,
+                    ", appears in the formula provided, ",
+                    formula_to_string(new_form),
+                    ". This is incorrect."))                    
+    }
+
+    ## END CHECKS
     
     if(is.null(data)){
         ## The form uses variables described in the caller env        

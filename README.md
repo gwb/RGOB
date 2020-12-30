@@ -49,3 +49,8 @@ gob(glm(Yb ~ X + B, family=binomial(link="logit")), Z)
 gob(glm(Yp ~ X + B, family=poisson), Z)
 ```
 
+
+## TODO
+
+- add check to `gob` function to make sure there is no issue with assignment in formula
+

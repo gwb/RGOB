@@ -66,23 +66,35 @@ formula_to_string <- function(form) {
 #' \dontrun{
 #' get_predictor_names(Y ~ X + Z) # returns: c("X", "Z")
 #' get_predictor_names(Y ~ X:C) # returns: c("X", "C")
+#' get_predictor_names(Y ~ X + B + X:C) # returns: c("X", "B", "C")
 #' }
 get_predictor_names <- function(form) {
-    if(is_one_predictor_formula(form)) {
-        return(as_string(form[[3]]))
-    }
-    
-    rec <- function(sub_form, acc) {
-        if(is_symbol(sub_form)) {
-            return(c(as_string(sub_form), acc))
-        } else {
-            ## sub_form is of the form A + ...           
-            return(rec(sub_form[[2]], c(as_string(sub_form[[3]]), acc)))
+    rec <- function(form) {
+        if(is_symbol(form)) {
+            return(as_string(form))
         }
+        
+        return(c(rec(form[[2]]), rec(form[[3]])))
     }
-    
-    return(rec(form[[3]], NULL))
+    return(unique(rec(form[[3]])))
 }
+##get_predictor_names <- function(form) {
+##    if(is_one_predictor_formula(form)) {
+##        return(as_string(form[[3]]))
+##    }
+##    
+##    rec <- function(sub_form, acc) {
+##        if(is_symbol(sub_form)) {
+##            return(c(as_string(sub_form), acc))
+##        } else {
+##            ## sub_form is of the form A + ...           
+##            return(rec(sub_form[[2]], c(as_string(sub_form[[3]]), acc)))
+##        }
+##    }
+##    
+##    return(rec(form[[3]], NULL))
+##}
+##
 
 #' Constructs a dataframe collecting the predictors from a formula
 #'
