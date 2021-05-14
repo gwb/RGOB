@@ -1,7 +1,7 @@
 
 #' Checks whether the formula has a single predictor (which is not a dot)
 #'
-#' @param form A formula
+#' @param form A formula.
 #' @return TRUE if formula has a single predictor, and that it is not a dot.
 #' FALSE otherwise.
 #' @examples
