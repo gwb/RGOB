@@ -23,7 +23,7 @@ is_one_predictor_formula <- function(form) {
 
 #' Checks whether the predictor side of a formula is a dot
 #'
-#' @param form A formula
+#' @param form A formula.
 #' @return TRUE if predictor side is a dot. FALSE otherwise.
 #' @examples
 #' \dontrun{
